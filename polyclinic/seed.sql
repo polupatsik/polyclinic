@@ -44,3 +44,12 @@ INSERT INTO question (text, symptom_id) VALUES
 ('Есть ли кашель?', 1),
 ('Есть ли температура?', 2),
 ('Болит ли голова?', 3);
+
+UPDATE ai_model SET status='active' WHERE id=1;
+INSERT INTO "user" (email, password_hash, role_id)
+VALUES ('testpatient@mail.com', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 3);
+
+INSERT INTO patient (user_id, birth_date)
+VALUES (3, '2000-01-01');
+
+UPDATE ai_model SET status='active' WHERE id=1;

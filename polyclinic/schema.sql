@@ -88,22 +88,25 @@ CREATE TABLE ai_model (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     version VARCHAR(50),
+    trained_at TIMESTAMP,
+    accuracy FLOAT,
+    status VARCHAR(20) DEFAULT 'inactive'
+        CHECK (status IN ('active', 'inactive')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 CREATE TABLE symptom (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) UNIQUE NOT NULL
+    name VARCHAR(100) UNIQUE NOT NULL,
+    body_part VARCHAR(100)
 );
-
 
 CREATE TABLE question (
     id SERIAL PRIMARY KEY,
     text TEXT NOT NULL,
-    symptom_id INT REFERENCES symptom(id) ON DELETE SET NULL
+    symptom_id INT REFERENCES symptom(id) ON DELETE SET NULL,
+    is_initial BOOLEAN DEFAULT FALSE
 );
-
 
 CREATE TABLE ai_questionnaire (
     id SERIAL PRIMARY KEY,
@@ -137,7 +140,7 @@ CREATE TABLE audit_log (
     action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     action VARCHAR(255) NOT NULL,
     object_type VARCHAR(100) NOT NULL,
-    object_id INT,
+    object_id TEXT,
     result VARCHAR(50) NOT NULL,
     details TEXT
 );
