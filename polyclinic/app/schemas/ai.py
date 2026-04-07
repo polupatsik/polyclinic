@@ -1,20 +1,25 @@
 from pydantic import BaseModel
 
 
-class AnswerItem(BaseModel):
+class AnswerRequest(BaseModel):
+    questionnaire_id: int
     question_id: int
     answer: bool
 
 
-class DiagnoseRequest(BaseModel):
-    duration_days: int
-    answers: list[AnswerItem]
-
-
-class DiagnoseResponse(BaseModel):
+class StartResponse(BaseModel):
     questionnaire_id: int
-    recommended_specialization: str
-    duration_days: int
+    question_id: int
+    question_text: str
+
+
+class AnswerResponse(BaseModel):
+    questionnaire_id: int
+    finished: bool
+    next_question_id: int | None
+    next_question_text: str | None
+    recommended_specialization: str | None
+    confidence: float | None
 
 
 class QuestionOut(BaseModel):

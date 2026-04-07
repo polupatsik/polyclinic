@@ -1,4 +1,3 @@
-
 INSERT INTO role (name) VALUES
 ('ADMIN'),
 ('DOCTOR'),
@@ -15,7 +14,8 @@ INSERT INTO status (name) VALUES
 INSERT INTO specialization (name) VALUES
 ('Терапевт'),
 ('ЛОР'),
-('Невролог');
+('Невролог'),
+('Гастроэнтеролог');
 
 
 INSERT INTO "user" (email, password_hash, role_id)
@@ -24,32 +24,35 @@ VALUES
 ('patient1@mail.com', 'hashedpassword', 3);
 
 INSERT INTO doctor (user_id, specialization_id, cabinet_number)
-VALUES (1, 1, '101');
+VALUES (
+    (SELECT id FROM "user" WHERE email = 'doctor1@mail.com'),
+    (SELECT id FROM specialization WHERE name = 'Терапевт'),
+    '101'
+);
 
 INSERT INTO patient (user_id, birth_date)
-VALUES (2, '2000-05-15');
+VALUES (
+    (SELECT id FROM "user" WHERE email = 'patient1@mail.com'),
+    '2000-05-15'
+);
 
-INSERT INTO appointment (patient_id, doctor_id, start_time, status_id, complaints)
-VALUES (2, 1, '2025-06-01 10:00:00', 1, 'Головная боль');
-
-INSERT INTO ai_model (name, version)
-VALUES ('MedicalClassifier', '1.0');
+INSERT INTO ai_model (name, version, status)
+VALUES ('MedicalClassifier', '1.0', 'active');
 
 INSERT INTO symptom (name) VALUES
-('Кашель'),
-('Температура'),
-('Головная боль');
+('кашель'),
+('температура'),
+('головная боль'),
+('насморк'),
+('боль в горле'),
+('слабость'),
+('тошнота');
 
-INSERT INTO question (text, symptom_id) VALUES
-('Есть ли кашель?', 1),
-('Есть ли температура?', 2),
-('Болит ли голова?', 3);
-
-UPDATE ai_model SET status='active' WHERE id=1;
-INSERT INTO "user" (email, password_hash, role_id)
-VALUES ('testpatient@mail.com', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 3);
-
-INSERT INTO patient (user_id, birth_date)
-VALUES (3, '2000-01-01');
-
-UPDATE ai_model SET status='active' WHERE id=1;
+INSERT INTO question (text, symptom_id, is_initial) VALUES
+('Есть ли кашель?', 1, true),
+('Есть ли повышенная температура?', 2, true),
+('Болит ли голова?', 3, true),
+('Есть ли насморк?', 4, false),
+('Есть ли боль в горле?', 5, false),
+('Чувствуете ли слабость?', 6, false),
+('Есть ли тошнота?', 7, false);

@@ -45,7 +45,10 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)):
     )
     db.add(patient)
 
-    send_verification_email(data.email, verification_token)
+    try:
+        send_verification_email(data.email, verification_token)
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
     await write_audit(db, user.id, "REGISTER", "user", str(user.id), "success")
     return {"message": "Пользователь зарегистрирован. Проверьте email для подтверждения.", "user_id": user.id}

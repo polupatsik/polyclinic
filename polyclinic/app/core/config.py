@@ -15,9 +15,11 @@ class Settings(BaseSettings):
 
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_USER: str
-    SMTP_PASSWORD: str
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
+
+    GROQ_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
