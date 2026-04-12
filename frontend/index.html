@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МедПортал — Городская поликлиника</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="landing">
+  <div class="landing-card">
+    <div class="landing-icon">
+      <svg width="42" height="42" fill="none" stroke="white" stroke-width="1.5" viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+    <div class="landing-title">МедПортал</div>
+    <div class="landing-sub">Городская поликлиника — запись онлайн</div>
+    <div class="landing-btns">
+      <button class="landing-btn btn-land-primary" onclick="openModal('login-modal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Войти
+      </button>
+      <button class="landing-btn btn-land-outline" onclick="openModal('reg-modal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <line x1="20" y1="8" x2="20" y2="14"/>
+          <line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+        Зарегистрироваться
+      </button>
+    </div>
+    <p style="margin-top:2rem;font-size:12px;color:rgba(255,255,255,.3);">
+      Нажимая кнопку, вы соглашаетесь с условиями использования
+    </p>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="login-modal" onclick="handleOverlayClick(event,'login-modal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('login-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="modal-title">Вход в систему</div>
+      <div class="modal-sub">Введите ваши данные для входа</div>
+    </div>
+    <div class="modal-body">
+      <div id="login-alert"></div>
+      <form id="login-form" onsubmit="doLogin(event)">
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email
+          </label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" class="form-control" id="l-email" placeholder="your@email.ru" required autocomplete="email">
+          </div>
+          <div class="form-error hidden" id="l-email-err">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Пароль
+          </label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" class="form-control" id="l-pass" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <div class="form-error hidden" id="l-pass-err">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span></span>
+          </div>
+        </div>
+        <div style="text-align:right;margin-bottom:1rem;">
+          <a href="pages/forgot.html" style="font-size:13px;color:var(--blue-mid);">Забыли пароль?</a>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="login-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Войти
+        </button>
+      </form>
+      <p class="text-center text-muted mt-2">
+        Нет аккаунта?
+        <a href="#" onclick="switchToReg()" style="color:var(--blue-mid);">Зарегистрироваться</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="reg-modal" onclick="handleOverlayClick(event,'reg-modal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('reg-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="8.5" cy="7" r="4"/>
+          <line x1="20" y1="8" x2="20" y2="14"/>
+          <line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+      </div>
+      <div class="modal-title">Регистрация</div>
+      <div class="modal-sub">Создайте аккаунт пациента</div>
+    </div>
+    <div class="modal-body">
+      <div id="reg-alert"></div>
+      <form id="reg-form" onsubmit="doRegister(event)">
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email
+          </label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" class="form-control" id="r-email" placeholder="patient@mail.ru" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Пароль
+          </label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" class="form-control" id="r-pass" placeholder="Минимум 6 символов" required minlength="6">
+          </div>
+          <div class="form-error hidden" id="r-pass-err">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+            <span>Минимум 6 символов</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Дата рождения
+          </label>
+          <input type="date" class="form-control" id="r-dob" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="reg-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Создать аккаунт
+        </button>
+      </form>
+      <p class="text-center text-muted mt-2">
+        Уже есть аккаунт?
+        <a href="#" onclick="switchToLogin()" style="color:var(--blue-mid);">Войти</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  if (getToken()) redirectByRole();
+
+  function handleOverlayClick(e, id) {
+    if (e.target.id === id) closeModal(id);
+  }
+
+  function switchToReg()   { closeModal('login-modal'); setTimeout(() => openModal('reg-modal'), 150); }
+  function switchToLogin() { closeModal('reg-modal'); setTimeout(() => openModal('login-modal'), 150); }
+
+  async function doLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('l-email').value.trim();
+    const pass  = document.getElementById('l-pass').value;
+    const btn   = document.getElementById('login-btn');
+    const alert = document.getElementById('login-alert');
+    alert.innerHTML = '';
+
+    let valid = true;
+    if (!email) { showFieldErr('l-email-err', 'Введите email'); valid = false; }
+    if (!pass)  { showFieldErr('l-pass-err', 'Введите пароль'); valid = false; }
+    if (!valid) return;
+
+    setLoading(btn, true, 'Вход...');
+    try {
+      await login(email, pass);
+      toast('Добро пожаловать!', 'success');
+      setTimeout(() => redirectByRole(), 400);
+    } catch(err) {
+      alert.innerHTML = `<div style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5;border-radius:var(--radius);padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:.75rem;">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ${esc(err.message)}
+      </div>`;
+    } finally { setLoading(btn, false); }
+  }
+
+  async function doRegister(e) {
+    e.preventDefault();
+    const email = document.getElementById('r-email').value.trim();
+    const pass  = document.getElementById('r-pass').value;
+    const dob   = document.getElementById('r-dob').value;
+    const btn   = document.getElementById('reg-btn');
+    const alertEl = document.getElementById('reg-alert');
+    alertEl.innerHTML = '';
+
+    if (pass.length < 6) {
+      document.getElementById('r-pass-err').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('r-pass-err').classList.add('hidden');
+
+    setLoading(btn, true, 'Регистрация...');
+    try {
+      await register(email, pass, dob);
+      alertEl.innerHTML = `<div style="background:var(--green-light);color:var(--green);border:1px solid #86efac;border-radius:var(--radius);padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:.75rem;">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Регистрация успешна! Проверьте email для подтверждения.
+      </div>`;
+      setTimeout(() => switchToLogin(), 2000);
+    } catch(err) {
+      alertEl.innerHTML = `<div style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5;border-radius:var(--radius);padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:.75rem;">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ${esc(err.message)}
+      </div>`;
+    } finally { setLoading(btn, false); }
+  }
+
+  function showFieldErr(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('hidden');
+    const span = el.querySelector('span');
+    if (span) span.textContent = msg;
+  }
+</script>
+</body>
+</html>
