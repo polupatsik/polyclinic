@@ -1,1 +1,508 @@
-<!--Здесь будет панель управления пациента-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МедПортал — Пациент</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">МедПортал</div>
+        <div class="logo-tag">Кабинет пациента</div>
+      </div>
+    </div>
+    <div class="sidebar-user" id="sidebar-user-block"></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Меню</div>
+      <div class="nav-item active" data-page="doctors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Врачи
+      </div>
+      <div class="nav-item" data-page="my-appts">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Мои записи
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost btn-full" onclick="logout()" style="justify-content:flex-start;gap:8px;color:rgba(255,255,255,.5);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- DOCTORS PAGE -->
+    <div id="page-doctors">
+      <div class="topbar">
+        <span class="topbar-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Запись к врачу
+        </span>
+        <div class="topbar-right">
+          <button class="btn btn-blue btn-sm" onclick="showPage('my-appts')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Мои записи
+          </button>
+        </div>
+      </div>
+      <div class="page-content">
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;">
+
+          <!-- LEFT: doctors -->
+          <div>
+            <div class="filter-bar">
+              <div class="input-wrap" style="flex:1;max-width:300px;">
+                <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="form-control" id="doc-search" placeholder="Поиск врача..." oninput="filterDoctors()">
+              </div>
+              <select class="form-control" id="spec-filter" onchange="filterDoctors()" style="max-width:200px;">
+                <option value="">Все специализации</option>
+              </select>
+            </div>
+            <div class="doctors-grid" id="doctors-grid">
+              <div class="loading-center"><div class="spinner"></div> Загрузка врачей...</div>
+            </div>
+          </div>
+
+          <!-- RIGHT: AI widget -->
+          <div>
+            <div class="ai-widget">
+              <div class="ai-header">
+                <div class="ai-dot"></div>
+                <div class="ai-header-text">
+                  <h4>AI-помощник</h4>
+                  <p>Подберём специалиста по симптомам</p>
+                </div>
+              </div>
+              <div class="ai-messages" id="ai-messages">
+                <div class="ai-msg bot">
+                  <div class="ai-bubble">Привет! Я помогу подобрать нужного специалиста. Нажмите «Начать», чтобы ответить на несколько вопросов.</div>
+                </div>
+              </div>
+              <div class="ai-controls" id="ai-controls">
+                <button class="btn btn-primary btn-full btn-sm" id="ai-start-btn" onclick="startAI()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Начать опрос
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY APPOINTMENTS PAGE -->
+    <div id="page-my-appts" class="hidden">
+      <div class="topbar">
+        <span class="topbar-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Мои записи
+        </span>
+        <div class="topbar-right">
+          <button class="btn btn-blue btn-sm" onclick="showPage('doctors')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Записаться
+          </button>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="filter-bar">
+          <select class="form-control" id="appt-status-filter" onchange="filterAppts()">
+            <option value="">Все статусы</option>
+            <option value="CREATED">Создана</option>
+            <option value="CONFIRMED">Подтверждена</option>
+            <option value="COMPLETED">Завершена</option>
+            <option value="CANCELLED">Отменена</option>
+          </select>
+        </div>
+        <div class="card">
+          <div id="appts-list">
+            <div class="loading-center"><div class="spinner"></div> Загрузка...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOOK APPOINTMENT MODAL -->
+<div class="modal-overlay" id="book-modal" onclick="handleOverlayClick(event,'book-modal')">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="closeModal('book-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="modal-title" id="book-doc-name">Запись к врачу</div>
+      <div class="modal-sub" id="book-doc-spec"></div>
+    </div>
+    <div class="modal-body">
+      <div id="book-alert"></div>
+      <div class="form-group">
+        <label class="form-label">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Выберите дату
+        </label>
+        <input type="date" class="form-control" id="book-date" onchange="loadSlots()" style="max-width:200px;">
+      </div>
+      <div id="slots-section" class="hidden">
+        <div class="form-label" style="margin-bottom:8px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Доступное время
+        </div>
+        <div id="slots-loading" class="hidden"><div class="spinner" style="width:18px;height:18px;border-width:2px;"></div></div>
+        <div class="slots-grid" id="slots-grid"></div>
+        <p id="no-slots-msg" class="text-muted hidden" style="margin-top:.5rem;">Нет свободных слотов на эту дату</p>
+      </div>
+      <div id="complaints-section" class="hidden" style="margin-top:1rem;">
+        <hr>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Жалобы (необязательно)
+          </label>
+          <textarea class="form-control" id="book-complaints" placeholder="Опишите симптомы или причину визита..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" id="book-submit-btn" onclick="submitBooking()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Подтвердить запись
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL CONFIRM MODAL -->
+<div class="modal-overlay" id="cancel-modal" onclick="handleOverlayClick(event,'cancel-modal')">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeModal('cancel-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon" style="background:var(--red-light);color:var(--red);">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </div>
+      <div class="modal-title">Отменить запись?</div>
+      <div class="modal-sub">Это действие нельзя отменить</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cancel-id">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-full" onclick="closeModal('cancel-modal')">Нет, оставить</button>
+        <button class="btn btn-danger btn-full" id="cancel-confirm-btn" onclick="confirmCancel()">Да, отменить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+requireRole('PATIENT');
+renderSidebarUser();
+
+let allDoctors = [];
+let allAppts = [];
+let selectedDocId = null;
+let selectedDocName = '';
+let selectedDocSpec = '';
+let selectedTime = null;
+let aiQId = null;
+
+// ── NAV ──
+document.querySelectorAll('[data-page]').forEach(el => {
+  el.addEventListener('click', () => showPage(el.dataset.page));
+});
+
+function showPage(id) {
+  ['doctors','my-appts'].forEach(p => {
+    document.getElementById('page-' + p).classList.toggle('hidden', p !== id);
+  });
+  document.querySelectorAll('[data-page]').forEach(e =>
+    e.classList.toggle('active', e.dataset.page === id));
+  if (id === 'my-appts') loadAppts();
+}
+
+function handleOverlayClick(e, id) { if (e.target.id === id) closeModal(id); }
+
+// ── DOCTORS ──
+async function initDoctors() {
+  const [docs, specs] = await Promise.all([
+    Doctors.list().catch(() => []),
+    Doctors.specializations().catch(() => [])
+  ]);
+  allDoctors = docs || [];
+
+  const sel = document.getElementById('spec-filter');
+  specs.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name;
+    sel.appendChild(o);
+  });
+  renderDoctors(allDoctors);
+}
+
+function filterDoctors() {
+  const q = document.getElementById('doc-search').value.toLowerCase();
+  const s = document.getElementById('spec-filter').value;
+  const filtered = allDoctors.filter(d => {
+    const matchQ = !q || (d.user?.email||'').toLowerCase().includes(q) || (d.specialization?.name||'').toLowerCase().includes(q);
+    const matchS = !s || String(d.specialization_id) === s;
+    return matchQ && matchS;
+  });
+  renderDoctors(filtered);
+}
+
+function renderDoctors(list) {
+  const grid = document.getElementById('doctors-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <h3>Врачи не найдены</h3><p>Попробуйте изменить фильтр</p></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(d => {
+    const name = d.user?.email || `Врач #${d.user_id}`;
+    const spec = d.specialization?.name || '—';
+    const initials = name[0].toUpperCase();
+    return `<div class="doctor-card" onclick="openBookModal(${d.user_id},'${esc(name)}','${esc(spec)}')">
+      <div class="doc-avatar">${initials}</div>
+      <div class="doc-name">${esc(name)}</div>
+      <div class="doc-spec">${esc(spec)}</div>
+      <div class="doc-meta">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Кабинет №${esc(d.cabinet_number||'—')}
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-outline btn-sm btn-full">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Записаться
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── BOOK ──
+function openBookModal(docId, name, spec) {
+  selectedDocId = docId;
+  selectedDocName = name;
+  selectedDocSpec = spec;
+  selectedTime = null;
+  document.getElementById('book-doc-name').textContent = name;
+  document.getElementById('book-doc-spec').textContent = spec;
+  document.getElementById('book-alert').innerHTML = '';
+  document.getElementById('slots-section').classList.add('hidden');
+  document.getElementById('complaints-section').classList.add('hidden');
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('book-date').value = today;
+  document.getElementById('book-date').min = today;
+  openModal('book-modal');
+  loadSlots();
+}
+
+async function loadSlots() {
+  const date = document.getElementById('book-date').value;
+  if (!date || !selectedDocId) return;
+  const sec = document.getElementById('slots-section');
+  const grid = document.getElementById('slots-grid');
+  const loading = document.getElementById('slots-loading');
+  const noMsg = document.getElementById('no-slots-msg');
+  sec.classList.remove('hidden');
+  grid.innerHTML = '';
+  loading.classList.remove('hidden');
+  noMsg.classList.add('hidden');
+  document.getElementById('complaints-section').classList.add('hidden');
+  selectedTime = null;
+
+  const data = await Doctors.slots(selectedDocId, date).catch(() => ({ busy_slots: [] }));
+  loading.classList.add('hidden');
+  const busy = data.busy_slots || [];
+  const slots = [];
+  for (let h = 8; h <= 17; h++) {
+    slots.push(`${String(h).padStart(2,'0')}:00`);
+    if (h < 17) slots.push(`${String(h).padStart(2,'0')}:30`);
+  }
+  const free = slots.filter(t => !busy.includes(t));
+  if (!free.length) { noMsg.classList.remove('hidden'); return; }
+  grid.innerHTML = free.map(t =>
+    `<button class="slot-btn" onclick="selectSlot('${t}',this)">${t}</button>`
+  ).join('');
+}
+
+function selectSlot(time, btn) {
+  selectedTime = time;
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('complaints-section').classList.remove('hidden');
+}
+
+async function submitBooking() {
+  if (!selectedTime) { toast('Выберите время', 'error'); return; }
+  const date = document.getElementById('book-date').value;
+  const complaints = document.getElementById('book-complaints').value;
+  const btn = document.getElementById('book-submit-btn');
+  setLoading(btn, true, 'Запись...');
+  try {
+    await Appointments.create({
+      doctor_id: selectedDocId,
+      start_time: `${date}T${selectedTime}:00`,
+      complaints
+    });
+    closeModal('book-modal');
+    toast('Запись успешно создана!', 'success');
+    document.getElementById('book-complaints').value = '';
+  } catch(e) {
+    document.getElementById('book-alert').innerHTML = `<div style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5;border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:.75rem;">${esc(e.message)}</div>`;
+  } finally { setLoading(btn, false); }
+}
+
+// ── MY APPOINTMENTS ──
+async function loadAppts() {
+  const el = document.getElementById('appts-list');
+  el.innerHTML = '<div class="loading-center"><div class="spinner"></div> Загрузка...</div>';
+  allAppts = await Appointments.my().catch(() => []);
+  filterAppts();
+}
+
+function filterAppts() {
+  const s = document.getElementById('appt-status-filter').value;
+  const filtered = allAppts.filter(a => !s || a.status_name === s);
+  renderAppts(filtered.sort((a,b) => new Date(b.start_time)-new Date(a.start_time)));
+}
+
+function renderAppts(list) {
+  const el = document.getElementById('appts-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <h3>Нет записей</h3><p>Запишитесь к врачу в разделе «Врачи»</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(a => {
+    const d = new Date(a.start_time);
+    const canCancel = ['CREATED','CONFIRMED'].includes(a.status_name);
+    return `<div class="appt-item">
+      <div class="appt-date-box">
+        <div class="day">${d.getDate()}</div>
+        <div class="mon">${d.toLocaleString('ru',{month:'short'})}</div>
+      </div>
+      <div class="appt-info">
+        <div class="appt-title">Врач #${a.doctor_id}</div>
+        <div class="appt-time">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${d.toLocaleString('ru',{weekday:'long', hour:'2-digit', minute:'2-digit'})}
+        </div>
+        ${a.complaints ? `<div class="appt-note">${esc(a.complaints)}</div>` : ''}
+        <div style="margin-top:6px;">${statusBadge(a.status_name||'CREATED')}</div>
+      </div>
+      <div class="appt-actions">
+        ${canCancel ? `<button class="btn btn-danger btn-sm" onclick="openCancelModal(${a.id})">Отменить</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openCancelModal(id) {
+  document.getElementById('cancel-id').value = id;
+  openModal('cancel-modal');
+}
+
+async function confirmCancel() {
+  const id = document.getElementById('cancel-id').value;
+  const btn = document.getElementById('cancel-confirm-btn');
+  setLoading(btn, true, 'Отмена...');
+  try {
+    await Appointments.cancel(id);
+    closeModal('cancel-modal');
+    toast('Запись отменена', 'info');
+    loadAppts();
+  } catch(e) { toast(e.message, 'error'); }
+  finally { setLoading(btn, false); }
+}
+
+// ── AI ──
+function addMsg(text, from = 'bot') {
+  const msgs = document.getElementById('ai-messages');
+  msgs.innerHTML += `<div class="ai-msg ${from}"><div class="ai-bubble">${esc(text)}</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showYesNo(qId) {
+  document.getElementById('ai-controls').innerHTML = `<div class="ai-yesno">
+    <button class="btn btn-primary btn-sm" style="flex:1;" onclick="answerAI(${qId},true)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Да
+    </button>
+    <button class="btn btn-outline btn-sm" style="flex:1;" onclick="answerAI(${qId},false)">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Нет
+    </button>
+  </div>`;
+}
+
+async function startAI() {
+  const btn = document.getElementById('ai-start-btn');
+  setLoading(btn, true, '');
+  try {
+    const data = await AI.start();
+    aiQId = data.questionnaire_id;
+    document.getElementById('ai-messages').innerHTML = '';
+    addMsg('Отлично! Отвечайте «Да» или «Нет» на вопросы.');
+    addMsg(data.question_text);
+    showYesNo(data.question_id);
+  } catch(e) {
+    document.getElementById('ai-controls').innerHTML = `<p style="font-size:13px;color:var(--red);padding:.5rem;">${esc(e.message)}</p>`;
+  }
+}
+
+async function answerAI(qId, answer) {
+  addMsg(answer ? 'Да' : 'Нет', 'user');
+  document.getElementById('ai-controls').innerHTML = '<div class="loading-center" style="padding:.5rem;"><div class="spinner"></div></div>';
+  try {
+    const data = await AI.answer(aiQId, qId, answer);
+    if (data.finished) {
+      addMsg('Готово! Вот мои рекомендации:');
+      const msgs = document.getElementById('ai-messages');
+      msgs.innerHTML += `<div class="ai-result">
+        <div class="ai-result-label">Рекомендуемый специалист</div>
+        <div class="ai-result-spec">${esc(data.recommended_specialization||'Терапевт')}</div>
+        <div class="ai-result-conf">Уверенность: ${data.confidence||0}%</div>
+      </div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+      document.getElementById('ai-controls').innerHTML = `
+        <button class="btn btn-blue btn-full btn-sm" onclick="filterBySpec('${esc(data.recommended_specialization||'')}')">
+          Показать этих врачей →
+        </button>`;
+    } else {
+      addMsg(data.next_question_text);
+      showYesNo(data.next_question_id);
+    }
+  } catch(e) {
+    document.getElementById('ai-controls').innerHTML = `<p style="font-size:13px;color:var(--red);padding:.5rem;">${esc(e.message)}</p>`;
+  }
+}
+
+async function filterBySpec(specName) {
+  const sel = document.getElementById('spec-filter');
+  const opt = Array.from(sel.options).find(o => o.text.toLowerCase() === specName.toLowerCase());
+  if (opt) { sel.value = opt.value; filterDoctors(); }
+  toast(`Показаны врачи: ${specName}`, 'info');
+}
+
+initDoctors();
+</script>
+</body>
+</html>
