@@ -63,6 +63,7 @@ body{font-family:var(--font);background:var(--gray-100);color:var(--gray-900);fo
 .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;cursor:pointer;color:var(--gray-400);padding:4px;border-radius:var(--radius-sm);transition:all .15s;}
 .modal-close:hover{color:var(--gray-700);background:var(--gray-100);}
 .modal-body{padding:1.25rem 1.5rem 1.5rem;}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:8px;}
 
 /* ── TOAST ── */
 .toast-container{position:fixed;top:1.25rem;right:1.25rem;z-index:999;display:flex;flex-direction:column;gap:8px;max-width:320px;pointer-events:none;}
@@ -154,9 +155,28 @@ select.form-control{cursor:pointer;}
 .badge-yellow{background:var(--yellow-light);color:#92400e;}
 .badge-gray  {background:var(--gray-100);color:var(--gray-600);}
 
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+thead th{text-align:left;padding:10px 16px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);background:var(--gray-50);border-bottom:1px solid var(--gray-200);}
+tbody td{padding:12px 16px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--blue-pale);}
+
 /* ── FILTER BAR ── */
 .filter-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem;align-items:flex-end;}
 .filter-bar .form-control{max-width:220px;}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm);}
+.stat-icon{width:38px;height:38px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.si-blue  {background:var(--blue-light);color:var(--blue);}
+.si-green {background:var(--green-light);color:var(--green);}
+.si-red   {background:var(--red-light);color:var(--red);}
+.si-yellow{background:var(--yellow-light);color:var(--yellow);}
+.stat-label{font-size:12px;color:var(--gray-500);font-weight:500;}
+.stat-value{font-size:26px;font-weight:700;color:var(--gray-900);}
 
 /* ── DOCTOR CARDS ── */
 .doctors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:1rem;}
@@ -206,6 +226,17 @@ select.form-control{cursor:pointer;}
 .ai-result-spec{font-size:20px;font-weight:700;color:var(--blue);margin:4px 0;}
 .ai-result-conf{font-size:13px;color:var(--gray-600);}
 
+/* ── WEEK GRID ── */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:1rem;}
+.week-day{border-radius:var(--radius);overflow:hidden;border:1px solid var(--gray-200);min-height:100px;}
+.week-day-head{background:var(--navy);color:rgba(255,255,255,.7);padding:6px;text-align:center;font-size:11px;font-weight:600;}
+.week-day-head .dn{font-size:16px;font-weight:700;color:var(--white);display:block;}
+.week-day.today .week-day-head{background:var(--blue-mid);}
+.week-appt{padding:3px 5px;margin:3px 4px;background:var(--blue-light);border-radius:4px;font-size:10px;color:var(--blue);font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.week-appt:hover{background:var(--blue-mid);color:var(--white);}
+.week-appt.done{background:var(--green-light);color:var(--green);}
+.week-appt.cancelled{background:var(--red-light);color:var(--red);}
+
 /* ── EMPTY ── */
 .empty-state{text-align:center;padding:2.5rem 1rem;}
 .empty-state svg{color:var(--gray-300);margin-bottom:.75rem;}
@@ -220,6 +251,6 @@ select.form-control{cursor:pointer;}
 /* ── UTILS ── */
 .hidden{display:none!important;}
 hr{border:none;border-top:1px solid var(--gray-200);margin:1.25rem 0;}
-.text-center{text-align:center;}
 .text-muted{color:var(--gray-500);font-size:13px;}
-.mt-2{margin-top:1rem;}
+.mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}.mt-3{margin-top:1.5rem}
+.mb-1{margin-bottom:.5rem}.mb-2{margin-bottom:1rem}.mb-3{margin-bottom:1.5rem}
