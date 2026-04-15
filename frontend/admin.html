@@ -1,1 +1,518 @@
-<!--Здесь будет панель управления админа-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МедПортал — Администратор</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div><div class="logo-name">МедПортал</div><div class="logo-tag">Администрирование</div></div>
+    </div>
+    <div class="sidebar-user" id="sidebar-user-block"></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Управление</div>
+      <div class="nav-item active" data-page="dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Дашборд
+      </div>
+      <div class="nav-item" data-page="users">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Пользователи
+      </div>
+      <div class="nav-item" data-page="appointments">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Записи
+      </div>
+      <div class="nav-item" data-page="audit">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Журнал аудита
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn btn-ghost btn-full" onclick="logout()" style="justify-content:flex-start;gap:8px;color:rgba(255,255,255,.5);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard">
+      <div class="topbar">
+        <span class="topbar-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Дашборд
+        </span>
+        <div class="topbar-right">
+          <button class="btn btn-blue btn-sm" onclick="openModal('create-doctor-modal')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Добавить врача
+          </button>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="stats-grid" id="admin-stats"></div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Последние действия
+            </span>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('audit')">Весь журнал →</button>
+          </div>
+          <div id="recent-audit-body" class="table-wrap">
+            <div class="loading-center"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="page-users" class="hidden">
+      <div class="topbar">
+        <span class="topbar-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Пользователи
+        </span>
+        <div class="topbar-right">
+          <button class="btn btn-blue btn-sm" onclick="openModal('create-doctor-modal')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Добавить врача
+          </button>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="filter-bar">
+          <div class="input-wrap" style="flex:1;max-width:280px;">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="form-control" id="users-q" placeholder="Поиск по email..." oninput="filterUsers()">
+          </div>
+          <select class="form-control" id="users-role" onchange="filterUsers()">
+            <option value="">Все роли</option>
+            <option value="PATIENT">Пациенты</option>
+            <option value="DOCTOR">Врачи</option>
+            <option value="ADMIN">Администраторы</option>
+          </select>
+        </div>
+        <div class="card table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Email</th><th>Роль</th><th>Email</th><th>Регистрация</th><th>Действия</th></tr></thead>
+            <tbody id="users-body"><tr><td colspan="6"><div class="loading-center"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div id="page-appointments" class="hidden">
+      <div class="topbar">
+        <span class="topbar-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Все записи
+        </span>
+      </div>
+      <div class="page-content">
+        <div class="filter-bar">
+          <select class="form-control" id="admin-appt-status" onchange="filterAdminAppts()">
+            <option value="">Все статусы</option>
+            <option value="CREATED">Создана</option>
+            <option value="CONFIRMED">Подтверждена</option>
+            <option value="COMPLETED">Завершена</option>
+            <option value="CANCELLED">Отменена</option>
+          </select>
+        </div>
+        <div class="card" id="admin-appts-card">
+          <div class="loading-center"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIT -->
+    <div id="page-audit" class="hidden">
+      <div class="topbar">
+        <span class="topbar-title">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Журнал аудита
+        </span>
+      </div>
+      <div class="page-content">
+        <div class="filter-bar">
+          <div class="input-wrap" style="flex:1;max-width:280px;">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="form-control" id="audit-q" placeholder="Поиск по действию..." oninput="filterAudit()">
+          </div>
+          <select class="form-control" id="audit-result" onchange="filterAudit()">
+            <option value="">Все результаты</option>
+            <option value="success">Успех</option>
+            <option value="error">Ошибка</option>
+          </select>
+        </div>
+        <div class="card table-wrap">
+          <table>
+            <thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Объект</th><th>Результат</th></tr></thead>
+            <tbody id="audit-body"><tr><td colspan="5"><div class="loading-center"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CREATE DOCTOR MODAL -->
+<div class="modal-overlay" id="create-doctor-modal" onclick="handleOverlayClick(event,'create-doctor-modal')">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" onclick="closeModal('create-doctor-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      </div>
+      <div class="modal-title">Добавить врача</div>
+      <div class="modal-sub">Создать аккаунт для нового врача</div>
+    </div>
+    <div class="modal-body">
+      <div id="create-doc-alert"></div>
+      <form id="create-doc-form" onsubmit="createDoctor(event)">
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email врача
+          </label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" class="form-control" id="cd-email" placeholder="doctor@clinic.ru" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Временный пароль
+          </label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="text" class="form-control" id="cd-pass" placeholder="Передайте врачу" required minlength="6">
+          </div>
+          <div class="form-error" id="cd-pass-hint" style="color:var(--gray-500);">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Минимум 6 символов. Сообщите врачу этот пароль.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Специализация
+          </label>
+          <select class="form-control" id="cd-spec" required>
+            <option value="">Загрузка...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            Номер кабинета
+          </label>
+          <input type="text" class="form-control" id="cd-cabinet" placeholder="101" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="create-doc-btn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Создать аккаунт врача
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE USER MODAL -->
+<div class="modal-overlay" id="delete-modal" onclick="handleOverlayClick(event,'delete-modal')">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeModal('delete-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon" style="background:var(--red-light);color:var(--red);">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </div>
+      <div class="modal-title">Удалить пользователя?</div>
+      <div class="modal-sub" id="delete-user-email">Это действие нельзя отменить</div>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="delete-user-id">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-full" onclick="closeModal('delete-modal')">Отмена</button>
+        <button class="btn btn-danger btn-full" id="delete-confirm-btn" onclick="confirmDelete()">Удалить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APPT STATUS MODAL -->
+<div class="modal-overlay" id="appt-status-modal" onclick="handleOverlayClick(event,'appt-status-modal')">
+  <div class="modal" style="max-width:360px;">
+    <button class="modal-close" onclick="closeModal('appt-status-modal')">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-top">
+      <div class="modal-icon">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div class="modal-title">Изменить статус</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Новый статус</label>
+        <select class="form-control" id="appt-new-status">
+          <option value="CONFIRMED">Подтверждена</option>
+          <option value="COMPLETED">Завершена</option>
+          <option value="CANCELLED">Отменена</option>
+        </select>
+      </div>
+      <input type="hidden" id="appt-status-id">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-full" onclick="closeModal('appt-status-modal')">Отмена</button>
+        <button class="btn btn-primary btn-full" id="appt-status-save-btn" onclick="saveApptStatus()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+requireRole('ADMIN');
+renderSidebarUser();
+
+let allUsers = [];
+let allAudit = [];
+let allAppts = [];
+
+document.querySelectorAll('[data-page]').forEach(el => {
+  el.addEventListener('click', () => showPage(el.dataset.page));
+});
+
+function showPage(id) {
+  ['dashboard','users','appointments','audit'].forEach(p => {
+    document.getElementById('page-'+p).classList.toggle('hidden', p !== id);
+  });
+  document.querySelectorAll('[data-page]').forEach(e =>
+    e.classList.toggle('active', e.dataset.page === id));
+  if (id === 'users') loadUsers();
+  if (id === 'audit') loadAudit();
+  if (id === 'appointments') loadAdminAppts();
+}
+
+function handleOverlayClick(e, id) { if (e.target.id === id) closeModal(id); }
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  const [users, audit] = await Promise.all([
+    Users.all().catch(() => []),
+    Users.auditLog().catch(() => [])
+  ]);
+  allUsers = users || [];
+  allAudit = audit || [];
+
+  const patients = allUsers.filter(u => u.role?.name === 'PATIENT').length;
+  const doctors  = allUsers.filter(u => u.role?.name === 'DOCTOR').length;
+  const errors   = allAudit.filter(a => a.result === 'error').length;
+
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon si-blue"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="stat-label">Пациентов</div><div class="stat-value">${patients}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-green"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div class="stat-label">Врачей</div><div class="stat-value">${doctors}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-yellow"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="stat-label">Всего пользователей</div><div class="stat-value">${allUsers.length}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon si-red"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div class="stat-label">Ошибок в журнале</div><div class="stat-value">${errors}</div>
+    </div>`;
+
+  const recent = allAudit.slice(0,8);
+  document.getElementById('recent-audit-body').innerHTML = recent.length ? `
+    <table><thead><tr><th>Время</th><th>Пользователь</th><th>Действие</th><th>Результат</th></tr></thead>
+    <tbody>${recent.map(a => `<tr>
+      <td style="font-size:13px;color:var(--gray-500);">${fmtDate(a.action_time)}</td>
+      <td>${a.user_id ? '#'+a.user_id : '—'}</td>
+      <td><code style="font-size:12px;background:var(--gray-100);padding:2px 6px;border-radius:4px;">${esc(a.action)}</code></td>
+      <td>${a.result==='success'?'<span class="badge badge-green">Успех</span>':'<span class="badge badge-red">Ошибка</span>'}</td>
+    </tr>`).join('')}</tbody></table>` :
+    '<div class="empty-state"><p>Журнал пуст</p></div>';
+}
+
+// ── USERS ──
+async function loadUsers() {
+  allUsers = await Users.all().catch(() => []);
+  filterUsers();
+}
+function filterUsers() {
+  const q = document.getElementById('users-q').value.toLowerCase();
+  const r = document.getElementById('users-role').value;
+  const list = allUsers.filter(u =>
+    (!q || (u.email||'').toLowerCase().includes(q)) &&
+    (!r || u.role?.name === r)
+  );
+  renderUsers(list);
+}
+function renderUsers(list) {
+  const body = document.getElementById('users-body');
+  if (!list.length) { body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><h3>Нет пользователей</h3></div></td></tr>'; return; }
+  const roleLabel = { PATIENT:'Пациент', DOCTOR:'Врач', ADMIN:'Администратор' };
+  const roleClass = { PATIENT:'badge-blue', DOCTOR:'badge-green', ADMIN:'badge-yellow' };
+  body.innerHTML = list.map(u => `<tr>
+    <td style="color:var(--gray-500);font-size:13px;">#${u.id}</td>
+    <td><strong>${esc(u.email)}</strong></td>
+    <td><span class="badge ${roleClass[u.role?.name]||'badge-gray'}">${roleLabel[u.role?.name]||u.role?.name||'—'}</span></td>
+    <td>${u.is_email_verified ? '<span class="badge badge-green">✓</span>' : '<span class="badge badge-yellow">Нет</span>'}</td>
+    <td style="font-size:13px;color:var(--gray-500);">${fmtDate(u.created_at)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="openDeleteModal(${u.id},'${esc(u.email)}')">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+    </button></td>
+  </tr>`).join('');
+}
+function openDeleteModal(id, email) {
+  document.getElementById('delete-user-id').value = id;
+  document.getElementById('delete-user-email').textContent = `Удалить: ${email}`;
+  openModal('delete-modal');
+}
+async function confirmDelete() {
+  const id = document.getElementById('delete-user-id').value;
+  const btn = document.getElementById('delete-confirm-btn');
+  setLoading(btn, true, '');
+  try {
+    await Users.delete(id);
+    closeModal('delete-modal');
+    toast('Пользователь удалён', 'success');
+    loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+  finally { setLoading(btn, false); }
+}
+
+// ── CREATE DOCTOR ──
+async function initCreateDoctor() {
+  const specs = await Doctors.specializations().catch(() => []);
+  const sel = document.getElementById('cd-spec');
+  sel.innerHTML = '<option value="">Выберите специализацию</option>' +
+    specs.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+
+async function createDoctor(e) {
+  e.preventDefault();
+  const email   = document.getElementById('cd-email').value.trim();
+  const pass    = document.getElementById('cd-pass').value;
+  const specId  = document.getElementById('cd-spec').value;
+  const cabinet = document.getElementById('cd-cabinet').value.trim();
+  const btn     = document.getElementById('create-doc-btn');
+  const alertEl = document.getElementById('create-doc-alert');
+  alertEl.innerHTML = '';
+  setLoading(btn, true, 'Создание...');
+  try {
+    await apiFetch('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password: pass, birth_date: '1990-01-01', role: 'DOCTOR', specialization_id: parseInt(specId), cabinet_number: cabinet })
+    });
+    alertEl.innerHTML = `<div style="background:var(--green-light);color:var(--green);border:1px solid #86efac;border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:.75rem;">
+      Врач создан! Передайте пароль: <strong>${esc(pass)}</strong></div>`;
+    document.getElementById('create-doc-form').reset();
+    toast('Аккаунт врача создан', 'success');
+    loadUsers();
+  } catch(e) {
+    alertEl.innerHTML = `<div style="background:var(--red-light);color:var(--red);border:1px solid #fca5a5;border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:.75rem;">${esc(e.message)}</div>`;
+  } finally { setLoading(btn, false); }
+}
+
+// ── ADMIN APPOINTMENTS ──
+async function loadAdminAppts() {
+  const card = document.getElementById('admin-appts-card');
+  card.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
+  allAppts = await Appointments.my().catch(() => []);
+  filterAdminAppts();
+}
+function filterAdminAppts() {
+  const s = document.getElementById('admin-appt-status').value;
+  const list = allAppts.filter(a => !s || a.status_name === s);
+  const card = document.getElementById('admin-appts-card');
+  if (!list.length) { card.innerHTML = '<div class="empty-state"><h3>Нет записей</h3></div>'; return; }
+  card.innerHTML = list.sort((a,b) => new Date(b.start_time)-new Date(a.start_time)).map(a => {
+    const d = new Date(a.start_time);
+    return `<div class="appt-item">
+      <div class="appt-date-box"><div class="day">${d.getDate()}</div><div class="mon">${d.toLocaleString('ru',{month:'short'})}</div></div>
+      <div class="appt-info">
+        <div class="appt-title">Пациент #${a.patient_id} → Врач #${a.doctor_id}</div>
+        <div class="appt-time">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${d.toLocaleString('ru',{weekday:'short',hour:'2-digit',minute:'2-digit'})}
+        </div>
+        <div style="margin-top:5px;">${statusBadge(a.status_name||'CREATED')}</div>
+      </div>
+      <div class="appt-actions">
+        <button class="btn btn-outline btn-sm" onclick="openApptStatusModal(${a.id})">Статус</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openApptStatusModal(id) {
+  document.getElementById('appt-status-id').value = id;
+  openModal('appt-status-modal');
+}
+async function saveApptStatus() {
+  const id = document.getElementById('appt-status-id').value;
+  const status = document.getElementById('appt-new-status').value;
+  const btn = document.getElementById('appt-status-save-btn');
+  setLoading(btn, true, '');
+  try {
+    await Appointments.status(id, status);
+    closeModal('appt-status-modal');
+    toast('Статус обновлён', 'success');
+    loadAdminAppts();
+  } catch(e) { toast(e.message, 'error'); }
+  finally { setLoading(btn, false); }
+}
+
+// ── AUDIT ──
+async function loadAudit() {
+  allAudit = await Users.auditLog().catch(() => []);
+  filterAudit();
+}
+function filterAudit() {
+  const q = document.getElementById('audit-q').value.toLowerCase();
+  const r = document.getElementById('audit-result').value;
+  const list = allAudit.filter(a =>
+    (!q || (a.action||'').toLowerCase().includes(q)) &&
+    (!r || a.result === r)
+  );
+  renderAudit(list);
+}
+function renderAudit(list) {
+  const body = document.getElementById('audit-body');
+  if (!list.length) { body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><h3>Нет записей</h3></div></td></tr>'; return; }
+  body.innerHTML = list.map(a => `<tr>
+    <td style="font-size:12px;color:var(--gray-500);white-space:nowrap;">${fmtDate(a.action_time)}</td>
+    <td>${a.user_id ? '#'+a.user_id : '<span style="color:var(--gray-400)">—</span>'}</td>
+    <td><code style="font-size:12px;background:var(--gray-100);padding:2px 6px;border-radius:4px;">${esc(a.action)}</code></td>
+    <td style="font-size:13px;">${esc(a.object_type)} ${a.object_id ? '#'+esc(a.object_id) : ''}</td>
+    <td>${a.result==='success'?'<span class="badge badge-green">Успех</span>':'<span class="badge badge-red">Ошибка</span>'}</td>
+  </tr>`).join('');
+}
+
+loadDashboard();
+initCreateDoctor();
+</script>
+</body>
+</html>
