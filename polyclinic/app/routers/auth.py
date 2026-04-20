@@ -86,7 +86,10 @@ async def forgot_password(data: ForgotPasswordRequest, db: AsyncSession = Depend
     user.reset_token = reset_token
     user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
 
-    send_reset_email(data.email, reset_token)
+    try:
+        send_reset_email(data.email, reset_token)
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
     await write_audit(db, user.id, "FORGOT_PASSWORD", "user", str(user.id), "success")
     return {"message": "Инструкции по восстановлению пароля отправлены на email"}
