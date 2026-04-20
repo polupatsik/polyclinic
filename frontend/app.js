@@ -65,7 +65,7 @@ function requireRole(...roles) {
 function redirectByRole() {
   const u = getUser();
   if (!u) return;
-  const map = { PATIENT: '/pages/patient.html', DOCTOR: '/pages/doctor.html', ADMIN: '/pages/admin.html' };
+  const map = { PATIENT: '/patient.html', DOCTOR: '/doctor.html', ADMIN: '/admin.html' };
   window.location.href = map[u.role] || '/index.html';
 }
 
