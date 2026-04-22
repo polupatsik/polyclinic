@@ -3,19 +3,18 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
 
-
 def send_email(to: str, subject: str, body: str) -> None:
     msg = MIMEMultipart()
-    msg["From"] = settings.SMTP_USER
+    msg["From"] = settings.SMTP_USER or "noreply@clinic.ru"
     msg["To"] = to
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "html"))
 
     with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.starttls()
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.SMTP_USER, to, msg.as_string())
-
+        if settings.SMTP_HOST != "mailhog":
+            server.starttls()
+            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        server.sendmail(msg["From"], to, msg.as_string())
 
 def send_verification_email(to: str, token: str) -> None:
     url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
@@ -26,7 +25,6 @@ def send_verification_email(to: str, token: str) -> None:
     <p>Ссылка действительна 24 часа.</p>
     """
     send_email(to, "Подтверждение email — Поликлиника", body)
-
 
 def send_reset_email(to: str, token: str) -> None:
     url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
