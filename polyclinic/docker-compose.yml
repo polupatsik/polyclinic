@@ -30,23 +30,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      mailhog:
-        condition: service_started
     volumes:
       - ./app:/app/app
       - ./models_store:/app/models_store
     networks:
       - polyclinic_net
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-  mailhog:
-    image: mailhog/mailhog
-    container_name: polyclinic_mailhog
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-    networks:
-      - polyclinic_net
 
 volumes:
   postgres_data:
