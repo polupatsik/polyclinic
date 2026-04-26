@@ -423,10 +423,7 @@ async function createDoctor(e) {
   alertEl.innerHTML = '';
   setLoading(btn, true, 'Создание...');
   try {
-    await apiFetch('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password: pass, birth_date: '1990-01-01', role: 'DOCTOR', specialization_id: parseInt(specId), cabinet_number: cabinet })
-    });
+    await Doctors.create({ email, password: pass, specialization_id: parseInt(specId), cabinet_number: cabinet });
     alertEl.innerHTML = `<div style="background:var(--green-light);color:var(--green);border:1px solid #86efac;border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:.75rem;">
       Врач создан! Передайте пароль: <strong>${esc(pass)}</strong></div>`;
     document.getElementById('create-doc-form').reset();

@@ -74,6 +74,7 @@ const Doctors = {
   list: (specId) => apiFetch('/api/doctors/' + (specId ? `?specialization_id=${specId}` : '')),
   specializations: () => apiFetch('/api/doctors/specializations'),
   slots: (id, date) => apiFetch(`/api/doctors/${id}/slots?date=${date}`),
+  create: (data) => apiFetch('/api/users/doctors', { method: 'POST', body: JSON.stringify(data) }),
 };
 const AI = {
   start:  ()             => apiFetch('/api/ai/start', { method:'POST' }),
