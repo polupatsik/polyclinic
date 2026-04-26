@@ -80,6 +80,13 @@ const AI = {
   answer: (qid, qn, ans) => apiFetch('/api/ai/answer', { method:'POST', body: JSON.stringify({ questionnaire_id: qid, question_id: qn, answer: ans }) }),
 };
 
+/* ── API ДЛЯ АДМИНИСТРАТОРА ── */
+const Users = {
+  all:      ()   => apiFetch('/api/users/'),
+  delete:   (id) => apiFetch(`/api/users/${id}`, { method: 'DELETE' }),
+  auditLog: ()   => apiFetch('/api/users/audit-log'),
+};
+
 /* ── API ДЛЯ ПАЦИЕНТА И ВРАЧА ── */
 const Appointments = {
   my:     ()       => apiFetch('/api/appointments/my'),
@@ -130,6 +137,7 @@ function statusBadge(s) {
 }
 
 function fmtTime(dt) { return new Date(dt).toLocaleString('ru-RU', { hour:'2-digit', minute:'2-digit' }); }
+function fmtDate(dt) { return new Date(dt).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Moscow' }); }
 
 function setLoading(btn, on, text = '') {
   if (on) { btn.disabled = true; btn._orig = btn.innerHTML; btn.innerHTML = `<span class="spinner" style="width:15px;height:15px;border-width:2px;"></span> ${text}`; }

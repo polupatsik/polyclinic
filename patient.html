@@ -257,13 +257,21 @@ async function initDoctors() {
 }
 
 function filterDoctors() {
-  const q = document.getElementById('doc-search').value.toLowerCase();
+  const q = document.getElementById('doc-search').value.toLowerCase().trim();
   const s = document.getElementById('spec-filter').value;
+
   const filtered = allDoctors.filter(d => {
-    const matchQ = !q || (d.user?.email||'').toLowerCase().includes(q) || (d.specialization?.name||'').toLowerCase().includes(q);
+    const email = (d.user?.email || '').toLowerCase();
+    const spec  = (d.specialization?.name || '').toLowerCase();
+
+    const fullText = `${email} ${spec}`;
+
+    const matchQ = !q || fullText.includes(q);
     const matchS = !s || String(d.specialization_id) === s;
+
     return matchQ && matchS;
   });
+
   renderDoctors(filtered);
 }
 
@@ -277,7 +285,7 @@ function renderDoctors(list) {
   }
   grid.innerHTML = list.map(d => {
     const name = d.user?.email || `Врач #${d.user_id}`;
-    const spec = d.specialization?.name || '—';
+    const spec = d.specialization?.name || 'Терапевт';
     const initials = name[0].toUpperCase();
     return `<div class="doctor-card" onclick="openBookModal(${d.user_id},'${esc(name)}','${esc(spec)}')">
       <div class="doc-avatar">${initials}</div>
