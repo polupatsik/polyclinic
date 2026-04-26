@@ -7,7 +7,8 @@ from app.db.database import get_db
 from app.models.models import User, AuditLog
 from app.core.dependencies import require_role, write_audit
 from app.schemas.users import UserResponse
-
+from app.schemas.auth import CreateDoctorRequest
+from app.models.models import User, AuditLog, Role, Doctor
 router = APIRouter()
 
 
@@ -47,3 +48,38 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     await db.delete(user)
     await write_audit(db, current_user.id, "DELETE_USER", "user", str(user_id), "success")
+
+
+@router.post("/doctors", status_code=status.HTTP_201_CREATED)
+async def create_doctor(
+    data: CreateDoctorRequest,  # ← вот здесь
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_role("ADMIN")),
+):
+    existing = await db.execute(select(User).where(User.email == data.email))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
+
+    role_result = await db.execute(select(Role).where(Role.name == "DOCTOR"))
+    role = role_result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=500, detail="Роль DOCTOR не найдена")
+
+    from app.core.security import hash_password
+    user = User(
+        email=data.email,
+        password_hash=hash_password(data.password),
+        role_id=role.id,
+        is_email_verified=True,
+    )
+    db.add(user)
+    await db.flush()
+
+    doctor = Doctor(
+        user_id=user.id,
+        specialization_id=data.specialization_id,
+        cabinet_number=data.cabinet_number,
+    )
+    db.add(doctor)
+    await write_audit(db, current_user.id, "CREATE_DOCTOR", "user", str(user.id), "success")
+    return {"message": "Врач создан", "user_id": user.id} 

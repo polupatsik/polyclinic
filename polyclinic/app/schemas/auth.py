@@ -20,3 +20,9 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+class CreateDoctorRequest(BaseModel):
+    email: EmailStr
+    password: str
+    specialization_id: int
+    cabinet_number: str
