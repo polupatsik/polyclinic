@@ -36,7 +36,16 @@ def get_initial_question_id() -> int:
 
 
 def should_finish(answers: dict) -> bool:
-    return len(answers) >= 4
+    model_data = get_model()
+    rules = model_data["next_question_rules"]
+    last_question_id = max(answers.keys())
+    next_id = rules.get(last_question_id, {}).get(answers[last_question_id])
+    if next_id is None:
+        return True
+    if next_id in answers:
+        return True
+    has_positive = any(v for v in answers.values())
+    return has_positive and len(answers) >= 5
 
 
 def predict_specialization(answers: dict) -> tuple[str, float]:
@@ -52,6 +61,10 @@ def predict_specialization(answers: dict) -> tuple[str, float]:
         if symptom_name and answer:
             idx = symptoms.index(symptom_name)
             symptom_vector[idx] = 1
+
+    has_positive = any(v == 1 for v in symptom_vector)
+    if not has_positive:
+        return "Терапевт", 1.0
 
     features_array = np.array(symptom_vector).reshape(1, -1)
     prediction = clf.predict(features_array)[0]
