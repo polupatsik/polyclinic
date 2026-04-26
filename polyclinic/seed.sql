@@ -31,7 +31,7 @@ INSERT INTO specialization (name) VALUES
 -- Пароли: admin123 / doctor123 / patient123
 INSERT INTO "user" (email, password_hash, role_id, is_email_verified)
 VALUES
-('admin@clinic.com',  '$2b$12$lGSNtg2Opbij46iXJQgZquVBwayV8mi6kYWMNqr5crgjt0PZmnVHm', 1, true),
+('admin@clinic.com',  '$$2b$10$edzpDkbVwkUA1/oIVII0O.YzRD6lP3.qvcZUYL0LKa5LdrEjvag6O', 1, true),
 ('doctor1@mail.com',  '$2b$12$.lWGw8YylTmRXPkIigC6LOezOipF5hg9DT2r9oemGOSAmoG6c3kTi', 2, true),
 ('doctor2@mail.com',  '$2b$12$.lWGw8YylTmRXPkIigC6LOezOipF5hg9DT2r9oemGOSAmoG6c3kTi', 2, true),
 ('patient1@mail.com', '$2b$12$eVMdtwgfrmolegRvBQbGguOGfy0i4dCfGVcQR6CDqMX5e/40MjRB.', 3, true);

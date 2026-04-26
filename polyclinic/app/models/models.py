@@ -63,8 +63,8 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     role: Mapped["Role"] = relationship(back_populates="users")
-    patient: Mapped["Patient | None"] = relationship(back_populates="user")
-    doctor: Mapped["Doctor | None"] = relationship(back_populates="user")
+    patient: Mapped["Patient | None"] = relationship(back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    doctor: Mapped["Doctor | None"] = relationship(back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
     audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="user")
 
 

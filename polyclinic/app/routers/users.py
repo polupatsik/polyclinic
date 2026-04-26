@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.db.database import get_db
 from app.models.models import User, AuditLog
@@ -15,7 +16,7 @@ async def get_all_users(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(require_role("ADMIN")),
 ):
-    result = await db.execute(select(User))
+    result = await db.execute(select(User).options(selectinload(User.role)))
     return result.scalars().all()
 
 

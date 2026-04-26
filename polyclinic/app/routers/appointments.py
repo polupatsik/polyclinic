@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from app.db.database import get_db
 from app.models.models import Appointment, Doctor, Patient, Status, User
@@ -17,17 +18,14 @@ async def create_appointment(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role("PATIENT")),
 ):
-    # Проверяем что пациент существует
     patient = await db.get(Patient, current_user.id)
     if not patient:
         raise HTTPException(status_code=404, detail="Профиль пациента не найден")
 
-    # Проверяем доктора
     doctor = await db.get(Doctor, data.doctor_id)
     if not doctor:
         raise HTTPException(status_code=404, detail="Врач не найден")
 
-    # Получаем статус CREATED
     status_result = await db.execute(select(Status).where(Status.name == "CREATED"))
     appt_status = status_result.scalar_one_or_none()
     if not appt_status:
@@ -62,7 +60,9 @@ async def get_my_appointments(
     current_user: User = Depends(require_role("PATIENT")),
 ):
     result = await db.execute(
-        select(Appointment).where(Appointment.patient_id == current_user.id)
+        select(Appointment)
+        .options(selectinload(Appointment.status))
+        .where(Appointment.patient_id == current_user.id)
     )
     return result.scalars().all()
 
@@ -73,7 +73,9 @@ async def get_doctor_appointments(
     current_user: User = Depends(require_role("DOCTOR")),
 ):
     result = await db.execute(
-        select(Appointment).where(Appointment.doctor_id == current_user.id)
+        select(Appointment)
+        .options(selectinload(Appointment.status))
+        .where(Appointment.doctor_id == current_user.id)
     )
     return result.scalars().all()
 
@@ -95,6 +97,12 @@ async def update_appointment_status(
         raise HTTPException(status_code=400, detail="Неверный статус")
 
     appointment.status_id = appt_status.id
+    await db.flush()
+    await db.refresh(appointment)
+    # подгружаем статус вручную чтобы вернуть status_name
+    await db.refresh(appt_status)
+    appointment.status = appt_status
+
     await write_audit(db, current_user.id, "UPDATE_APPOINTMENT_STATUS", "appointment", str(appointment_id), "success")
     return appointment
 
@@ -109,7 +117,6 @@ async def cancel_appointment(
     if not appointment:
         raise HTTPException(status_code=404, detail="Запись не найдена")
 
-    # Пациент может отменить только свою запись
     if current_user.role.name == "PATIENT" and appointment.patient_id != current_user.id:
         raise HTTPException(status_code=403, detail="Нет доступа к этой записи")
 
