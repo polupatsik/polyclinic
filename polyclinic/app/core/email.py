@@ -26,7 +26,7 @@ def send_email(to: str, subject: str, body: str) -> None:
 
 
 def send_verification_email(to: str, token: str) -> None:
-    url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    url = f"{settings.FRONTEND_URL}/verify-email.html?token={token}"
     body = f"""
     <h2>Подтверждение email</h2>
     <p>Для подтверждения аккаунта перейдите по ссылке:</p>
@@ -37,7 +37,7 @@ def send_verification_email(to: str, token: str) -> None:
 
 
 def send_reset_email(to: str, token: str) -> None:
-    url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+    url = f"{settings.FRONTEND_URL}/reset-password.html?token={token}"
     body = f"""
     <h2>Восстановление пароля</h2>
     <p>Для сброса пароля перейдите по ссылке:</p>
