@@ -535,6 +535,18 @@ async function startAI() {
   }
 }
 
+function restartAI() {
+  document.getElementById('ai-messages').innerHTML = `<div class="ai-msg bot">
+    <div class="ai-bubble">Привет! Я помогу подобрать нужного специалиста. Нажмите «Начать», чтобы ответить на несколько вопросов.</div>
+  </div>`;
+  document.getElementById('ai-controls').innerHTML = `
+    <button class="btn btn-primary btn-full btn-sm" id="ai-start-btn" onclick="startAI()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Начать опрос
+    </button>`;
+  aiQId = null;
+}
+
 async function answerAI(qId, answer) {
   addMsg(answer ? 'Да' : 'Нет', 'user');
   document.getElementById('ai-controls').innerHTML = '<div class="loading-center" style="padding:.5rem;"><div class="spinner"></div></div>';
@@ -552,6 +564,10 @@ async function answerAI(qId, answer) {
       document.getElementById('ai-controls').innerHTML = `
         <button class="btn btn-blue btn-full btn-sm" onclick="filterBySpec('${esc(data.recommended_specialization||'')}')">
           Показать этих врачей →
+        </button>
+        <button class="btn btn-outline btn-full btn-sm" style="margin-top:8px;" onclick="restartAI()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Пройти заново
         </button>`;
     } else {
       addMsg(data.next_question_text);
