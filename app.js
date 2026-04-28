@@ -18,7 +18,7 @@ async function apiFetch(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(API + path, { ...opts, headers });
-  if (res.status === 401) { logout(); return; }
+  if (res.status === 401 && path !== '/api/auth/login') { logout(); return; }
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || 'Ошибка сервера');
@@ -30,7 +30,7 @@ async function apiForm(path, fd) {
   const headers = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(API + path, { method: 'POST', headers, body: fd });
-  if (res.status === 401) { logout(); return; }
+  if (res.status === 401 && path !== '/api/auth/login') { logout(); return; }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || 'Ошибка входа');
   return data;
@@ -42,8 +42,10 @@ async function login(email, password) {
   fd.append('username', email);
   fd.append('password', password);
   const data = await apiForm('/api/auth/login', fd);
+  if (!data || !data.access_token) throw new Error('Неверный email или пароль');
   setToken(data.access_token);
   const p = parseJwt(data.access_token);
+  if (!p) throw new Error('Неверный email или пароль'); 
   setUser({ id: parseInt(p.sub), email, role: p.role });
   return p.role;
 }
