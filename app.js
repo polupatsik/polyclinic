@@ -55,6 +55,14 @@ async function register(email, password, birthDate) {
   });
 }
 
+async function resendVerification() {
+  return apiFetch('/api/auth/resend-verification', { method: 'POST' });
+}
+
+async function getMe() {
+  return apiFetch('/api/auth/me');
+}
+
 function logout() { rmToken(); rmUser(); window.location.href = '/index.html'; }
 function requireAuth() { if (!getToken()) window.location.href = '/index.html'; }
 function requireRole(...roles) {
@@ -74,7 +82,6 @@ const Doctors = {
   list: (specId) => apiFetch('/api/doctors/' + (specId ? `?specialization_id=${specId}` : '')),
   specializations: () => apiFetch('/api/doctors/specializations'),
   slots: (id, date) => apiFetch(`/api/doctors/${id}/slots?date=${date}`),
-  create: (data) => apiFetch('/api/users/doctors', { method: 'POST', body: JSON.stringify(data) }),
 };
 const AI = {
   start:  ()             => apiFetch('/api/ai/start', { method:'POST' }),
@@ -152,10 +159,50 @@ function renderSidebarUser() {
   const initials = u.email ? u.email[0].toUpperCase() : '?';
   el.innerHTML = `
     <div class="sidebar-avatar">${initials}</div>
-    <div>
+    <div style="min-width:0;">
       <div class="sidebar-user-name">${esc(u.email)}</div>
       <div class="sidebar-user-role">${roleLabel[u.role] || u.role}</div>
+      ${u.role === 'PATIENT' ? `<div id="email-verify-badge" style="margin-top:6px;font-size:11px;"></div>` : ''}
     </div>`;
+  if (u.role === 'PATIENT') loadVerifyBadge();
+}
+
+async function loadVerifyBadge() {
+  const badge = document.getElementById('email-verify-badge');
+  if (!badge) return;
+  try {
+    const me = await getMe();
+    if (me.is_email_verified) {
+      badge.innerHTML = `<span style="color:rgba(134,239,172,.9);display:flex;align-items:center;gap:4px;">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Email подтверждён
+      </span>`;
+    } else {
+      badge.innerHTML = `<span style="color:rgba(253,186,116,.9);display:flex;flex-direction:column;gap:4px;">
+        <span style="display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Email не подтверждён
+        </span>
+        <button onclick="doResendVerification(this)" style="background:none;border:none;padding:0;color:rgba(147,197,253,.9);font-size:11px;cursor:pointer;text-align:left;text-decoration:underline;">
+          Отправить письмо повторно
+        </button>
+      </span>`;
+    }
+  } catch { /* нет /api/auth/me — игнорируем */ }
+}
+
+async function doResendVerification(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Отправляем...';
+  try {
+    await resendVerification();
+    toast('Письмо отправлено! Проверьте почту.', 'success');
+    btn.textContent = 'Письмо отправлено ✓';
+  } catch(e) {
+    toast(e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Отправить письмо повторно';
+  }
 }
 
 /* ── SPINNER STYLE ── */

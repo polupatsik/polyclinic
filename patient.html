@@ -57,6 +57,22 @@
           </button>
         </div>
       </div>
+
+      <!-- Баннер подтверждения email -->
+      <div id="verify-banner" style="display:none;background:var(--yellow-light);border-bottom:1px solid #fcd34d;padding:10px 2rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#92400e;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Ваш email не подтверждён. Проверьте почту или запросите новую ссылку.</span>
+          </div>
+          <button id="banner-resend-btn" class="btn btn-sm"
+            style="background:#d97706;color:white;border-color:#d97706;white-space:nowrap;flex-shrink:0;"
+            onclick="bannerResend(this)">
+            Отправить повторно
+          </button>
+        </div>
+      </div>
+
       <div class="page-content">
         <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;">
 
@@ -239,6 +255,30 @@ function showPage(id) {
 
 function handleOverlayClick(e, id) { if (e.target.id === id) closeModal(id); }
 
+// ── EMAIL VERIFICATION BANNER ──
+async function initVerifyBanner() {
+  try {
+    const me = await getMe();
+    if (!me.is_email_verified) {
+      document.getElementById('verify-banner').style.display = 'block';
+    }
+  } catch { /* /me недоступен или уже подтверждён */ }
+}
+
+async function bannerResend(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Отправляем...';
+  try {
+    await resendVerification();
+    toast('Письмо отправлено! Проверьте почту.', 'success');
+    btn.textContent = 'Письмо отправлено ✓';
+  } catch(e) {
+    toast(e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Отправить повторно';
+  }
+}
+
 // ── DOCTORS ──
 async function initDoctors() {
   const [docs, specs] = await Promise.all([
@@ -259,19 +299,13 @@ async function initDoctors() {
 function filterDoctors() {
   const q = document.getElementById('doc-search').value.toLowerCase().trim();
   const s = document.getElementById('spec-filter').value;
-
   const filtered = allDoctors.filter(d => {
     const email = (d.user?.email || '').toLowerCase();
     const spec  = (d.specialization?.name || '').toLowerCase();
-
-    const fullText = `${email} ${spec}`;
-
-    const matchQ = !q || fullText.includes(q);
+    const matchQ = !q || `${email} ${spec}`.includes(q);
     const matchS = !s || String(d.specialization_id) === s;
-
     return matchQ && matchS;
   });
-
   renderDoctors(filtered);
 }
 
@@ -511,6 +545,7 @@ async function filterBySpec(specName) {
 }
 
 initDoctors();
+initVerifyBanner();
 </script>
 </body>
 </html>

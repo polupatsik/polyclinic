@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МедПортал — Подтверждение email</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="landing">
+  <div class="landing-card" style="max-width:400px;">
+    <div class="landing-icon" id="v-icon">
+      <div class="spinner" style="width:32px;height:32px;border-width:3px;border-color:rgba(255,255,255,.25);border-top-color:white;"></div>
+    </div>
+
+    <div class="landing-title" id="v-title">Проверяем...</div>
+    <div class="landing-sub" id="v-sub">Подтверждаем ваш email-адрес</div>
+
+    <div id="v-actions" style="display:none;margin-top:1.75rem;display:none;flex-direction:column;gap:10px;">
+      <button class="landing-btn btn-land-primary" onclick="window.location.href='/index.html'">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Войти в систему
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+async function verifyEmail() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+
+  const icon    = document.getElementById('v-icon');
+  const title   = document.getElementById('v-title');
+  const sub     = document.getElementById('v-sub');
+  const actions = document.getElementById('v-actions');
+
+  function setSuccess() {
+    icon.style.background = 'rgba(22,163,74,.25)';
+    icon.style.border = '2px solid rgba(22,163,74,.5)';
+    icon.innerHTML = `<svg width="36" height="36" fill="none" stroke="#4ade80" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+    title.textContent = 'Email подтверждён!';
+    sub.textContent   = 'Ваш аккаунт активирован. Теперь вы можете войти.';
+    actions.style.display = 'flex';
+  }
+
+  function setError(msg) {
+    icon.style.background = 'rgba(220,38,38,.2)';
+    icon.style.border = '2px solid rgba(220,38,38,.4)';
+    icon.innerHTML = `<svg width="36" height="36" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    title.textContent = 'Ошибка подтверждения';
+    sub.textContent   = msg;
+    actions.style.display = 'flex';
+  }
+
+  if (!token) { setError('Ссылка недействительна — токен отсутствует.'); return; }
+
+  try {
+    const res  = await fetch(`http://localhost:8000/api/auth/verify-email?token=${encodeURIComponent(token)}`);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) setSuccess();
+    else setError(data.detail || 'Ссылка недействительна или истекла.');
+  } catch {
+    setError('Не удалось подключиться к серверу. Попробуйте позже.');
+  }
+}
+
+verifyEmail();
+</script>
+</body>
+</html>
