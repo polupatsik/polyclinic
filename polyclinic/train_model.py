@@ -6,7 +6,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 
-# Порядок симптомов должен ТОЧНО совпадать с seed.sql и generate_training_data.py
 SYMPTOMS = [
     "кашель",           # вопрос id=1
     "температура",      # вопрос id=2
@@ -37,7 +36,6 @@ SPECIALIZATIONS = [
     "Пульмонолог",
 ]
 
-# question_id → symptom_name (соответствует порядку INSERT в seed.sql)
 QUESTION_SYMPTOM_MAP = {
     1:  "кашель",
     2:  "температура",
@@ -55,26 +53,35 @@ QUESTION_SYMPTOM_MAP = {
     14: "одышка",
 }
 
-# Адаптивный маршрут: question_id → {True: next_id, False: next_id}
-# None означает конец ветки
+# Дерево вопросов:
+# Начинаем с вопроса 2 (температура) — самый общий симптом,
+# охватывает все инфекционные ветки и служит хорошим разделителем.
+#
+# question_id → {True: next_id, False: next_id}
+# None = конец ветки, переходим к predict_specialization
+#
+# Маршруты:
+# Температура=да → кашель → (да: насморк→горло→конец | нет: одышка→конец)
+# Температура=нет → голова → (да: слабость→конец | нет: боль_в_груди → сыпь → сахар → зрение → спина → тошнота→живот)
+
 NEXT_QUESTION_RULES = {
-    1:  {True: 4,    False: 8},   # кашель? да→насморк, нет→боль в груди
-    2:  {True: 6,    False: 3},   # температура? да→слабость, нет→голова
-    3:  {True: 6,    False: 7},   # голова? да→слабость, нет→тошнота
-    4:  {True: 5,    False: 14},  # насморк? да→горло, нет→одышка
-    5:  {True: 2,    False: 6},   # горло? да→темп, нет→слабость
-    6:  {True: 2,    False: 7},   # слабость? да→темп, нет→тошнота
-    7:  {True: 12,   False: None},# тошнота? да→живот, нет→конец
+    2:  {True: 1,    False: 3},   # температура? да→кашель, нет→голова
+    1:  {True: 4,    False: 14},  # кашель? да→насморк, нет→одышка
+    4:  {True: 5,    False: 6},   # насморк? да→горло, нет→слабость
+    5:  {True: None, False: None},# горло? → конец
+    6:  {True: None, False: None},# слабость? → конец
+    14: {True: None, False: None},# одышка? → конец
+    3:  {True: 6,    False: 8},   # голова? да→слабость, нет→боль_в_груди
     8:  {True: None, False: 9},   # боль в груди? да→конец, нет→сыпь
     9:  {True: None, False: 10},  # сыпь? да→конец, нет→сахар
     10: {True: None, False: 11},  # сахар? да→конец, нет→зрение
     11: {True: None, False: 13},  # зрение? да→конец, нет→спина
-    12: {True: None, False: None},# живот? да→конец, нет→конец
-    13: {True: None, False: None},# спина? да→конец, нет→конец
-    14: {True: None, False: None},# одышка? да→конец, нет→конец
+    13: {True: None, False: 7},   # спина? да→конец, нет→тошнота
+    7:  {True: 12,   False: None},# тошнота? да→живот, нет→конец
+    12: {True: None, False: None},# живот? → конец
 }
 
-INITIAL_QUESTION_ID = 1
+INITIAL_QUESTION_ID = 2
 
 
 def load_training_data():
@@ -112,9 +119,9 @@ print(f"Загружено {len(X)} записей для обучения")
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 clf = RandomForestClassifier(
-    n_estimators=100,
-    max_depth=5,
-    min_samples_leaf=3,
+    n_estimators=200,
+    max_depth=8,
+    min_samples_leaf=2,
     class_weight="balanced",
     random_state=42,
 )
