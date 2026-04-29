@@ -379,7 +379,7 @@ function renderUsers(list) {
     <td style="color:var(--gray-500);font-size:13px;">#${u.id}</td>
     <td><strong>${esc(u.email)}</strong></td>
     <td><span class="badge ${roleClass[u.role?.name]||'badge-gray'}">${roleLabel[u.role?.name]||u.role?.name||'—'}</span></td>
-    <td>${u.is_email_verified ? '<span class="badge badge-green">✓</span>' : '<span class="badge badge-yellow">Нет</span>'}</td>
+    <td>${u.is_email_verified ? '<span class="badge badge-green">✓</span>' : '<span class="badge badge-yellow"><svg width="15" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">  <circle cx="10" cy="10" r="10"/><line x1="6" y1="6" x2="14" y2="14" stroke="orange" stroke-width="2.5" stroke-linecap="round"/> <line x1="14" y1="6" x2="6" y2="14" stroke="orange" stroke-width="2.5" stroke-linecap="round"/></svg></span>'}</td>
     <td style="font-size:13px;color:var(--gray-500);">${fmtDate(u.created_at)}</td>
     <td><button class="btn btn-danger btn-sm" onclick="openDeleteModal(${u.id},'${esc(u.email)}')">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
