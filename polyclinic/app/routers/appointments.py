@@ -50,8 +50,13 @@ async def create_appointment(
         )
 
     await write_audit(db, current_user.id, "CREATE_APPOINTMENT", "appointment", str(appointment.id), "success")
-    await db.refresh(appointment)
-    return appointment
+    await db.commit()
+    result = await db.execute(
+        select(Appointment)
+        .options(selectinload(Appointment.status))
+        .where(Appointment.id == appointment.id)
+    )
+    return result.scalar_one()
 
 
 @router.get("/my", response_model=list[AppointmentResponse])

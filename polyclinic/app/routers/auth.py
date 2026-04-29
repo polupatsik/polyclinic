@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 from app.db.database import get_db
 from app.models.models import User, Role, Patient
 from app.core.security import hash_password, verify_password, create_access_token
-from app.core.dependencies import write_audit
+from app.core.dependencies import write_audit, get_current_user
 from app.core.email import send_verification_email, send_reset_email
 from app.schemas.auth import RegisterRequest, TokenResponse, ResetPasswordRequest, ForgotPasswordRequest
 
@@ -72,6 +72,37 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
 
     await write_audit(db, user.id, "VERIFY_EMAIL", "user", str(user.id), "success")
     return {"message": "Email успешно подтверждён"}
+
+
+@router.post("/resend-verification")
+async def resend_verification(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.is_email_verified:
+        raise HTTPException(status_code=400, detail="Email уже подтверждён")
+
+    verification_token = secrets.token_urlsafe(32)
+    current_user.email_verification_token = verification_token
+    current_user.email_verification_expires = datetime.utcnow() + timedelta(hours=24)
+
+    try:
+        send_verification_email(current_user.email, verification_token)
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+        raise HTTPException(status_code=500, detail="Не удалось отправить письмо")
+
+    await write_audit(db, current_user.id, "RESEND_VERIFICATION", "user", str(current_user.id), "success")
+    return {"message": "Письмо отправлено повторно"}
+
+
+@router.get("/me")
+async def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "is_email_verified": current_user.is_email_verified,
+    }
 
 
 @router.post("/forgot-password")
