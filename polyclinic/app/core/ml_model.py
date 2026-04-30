@@ -4,24 +4,21 @@ import numpy as np
 
 _model_data = None
 
-# Дерево маршрутов по НАЗВАНИЮ симптома — не зависит от ID в БД
-# symptom_name → {True: next_symptom_name, False: next_symptom_name}
-# None = завершить опрос
 SYMPTOM_TREE = {
-    "температура":      {True:  "кашель",        False: "головная боль"},
-    "кашель":           {True:  "насморк",        False: "одышка"},
-    "насморк":          {True:  "боль в горле",   False: "слабость"},
-    "боль в горле":     {True:  None,             False: None},
-    "одышка":           {True:  None,             False: None},
-    "слабость":         {True:  None,             False: "тошнота"},
-    "тошнота":          {True:  "боль в животе",  False: None},
-    "боль в животе":    {True:  None,             False: None},
-    "головная боль":    {True:  "слабость",       False: "боль в груди"},
-    "боль в груди":     {True:  None,             False: "сыпь на коже"},
-    "сыпь на коже":     {True:  None,             False: "повышенный сахар"},
-    "повышенный сахар": {True:  None,             False: "нарушение зрения"},
-    "нарушение зрения": {True:  None,             False: "боль в спине"},
-    "боль в спине":     {True:  None,             False: None},
+    "температура":      {True: "кашель",          False: "головная боль"},
+    "кашель":           {True: "насморк",          False: "одышка"},
+    "насморк":          {True: "боль в горле",     False: "слабость"},
+    "боль в горле":     {True: "слабость",         False: "тошнота"},
+    "одышка":           {True: "слабость",         False: "боль в груди"},
+    "головная боль":    {True: "слабость",         False: "боль в груди"},
+    "слабость":         {True: "тошнота",          False: "боль в животе"},
+    "тошнота":          {True: "боль в животе",    False: "боль в груди"},
+    "боль в животе":    {True: "боль в груди",     False: "боль в спине"},
+    "боль в груди":     {True: "одышка",           False: "сыпь на коже"},
+    "сыпь на коже":     {True: "повышенный сахар", False: "повышенный сахар"},
+    "повышенный сахар": {True: "нарушение зрения", False: "нарушение зрения"},
+    "нарушение зрения": {True: "боль в спине",     False: "боль в спине"},
+    "боль в спине":     {True: None,               False: None},
 }
 
 INITIAL_SYMPTOM = "температура"
@@ -49,23 +46,14 @@ def get_initial_symptom() -> str:
     return INITIAL_SYMPTOM
 
 
-def get_next_symptom(current_symptom: str, answer: bool) -> str | None:
-    return SYMPTOM_TREE.get(current_symptom, {}).get(answer)
-
-
-def should_finish(answered_symptoms: set) -> bool:
-    for symptom, branches in SYMPTOM_TREE.items():
-        if symptom not in answered_symptoms:
-            # проверяем достижим ли этот симптом из уже отвеченных
-            continue
-        for ans, next_sym in branches.items():
-            if next_sym and next_sym not in answered_symptoms:
-                return False
-    return True
+def get_next_symptom(current_symptom: str, answer: bool, answered: set) -> str | None:
+    next_sym = SYMPTOM_TREE.get(current_symptom, {}).get(answer)
+    if next_sym and next_sym in answered:
+        return None
+    return next_sym
 
 
 def predict_specialization(symptom_answers: dict) -> tuple[str, float]:
-    """symptom_answers: {symptom_name: bool}"""
     model_data = get_model()
     clf = model_data["classifier"]
     symptoms = model_data["symptoms"]
