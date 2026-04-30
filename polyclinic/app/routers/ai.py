@@ -113,10 +113,12 @@ async def answer_question(
     db.add(qa)
     await db.flush()
 
-    next_symptom = get_next_symptom(current_symptom, data.answer)
+    symptom_answers = await get_all_symptom_answers(data.questionnaire_id, db)
+    answered_symptoms = set(symptom_answers.keys())
+
+    next_symptom = get_next_symptom(current_symptom, data.answer, answered_symptoms)
 
     if next_symptom is None:
-        symptom_answers = await get_all_symptom_answers(data.questionnaire_id, db)
         specialization, confidence = predict_specialization(symptom_answers)
         questionnaire.ai_result = specialization
 
@@ -133,7 +135,6 @@ async def answer_question(
 
     next_question = await get_question_by_symptom_name(next_symptom, db)
     if not next_question:
-        symptom_answers = await get_all_symptom_answers(data.questionnaire_id, db)
         specialization, confidence = predict_specialization(symptom_answers)
         questionnaire.ai_result = specialization
 
