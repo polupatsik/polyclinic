@@ -38,12 +38,15 @@ QUESTION_ORDER = [
     "зуд кожи",
     "акне",
     "шелушение кожи",
-    #эндокринные/офтальмо
+    #эндокринные/офтальмолог
     "повышенный сахар",
     "жажда и частое мочеиспускание",
     "нарушение зрения",
     "двоение в глазах",
 ]
+
+#Если пациент ответил "да" на слишком много вопросов — направляем к терапевту
+TOO_MANY_SYMPTOMS_THRESHOLD = 10
 
 
 def load_model():
@@ -97,7 +100,12 @@ def predict_specialization(symptom_answers: dict) -> tuple[str, float]:
         if symptom_name in symptoms and answer:
             symptom_vector[symptoms.index(symptom_name)] = 1
 
+    #Нет симптомов — терапевт
     if not any(symptom_vector):
+        return "Терапевт", 1.0
+
+    #Слишком много симптомов,тогда к терапевту на первичный осмотр
+    if sum(symptom_vector) >= TOO_MANY_SYMPTOMS_THRESHOLD:
         return "Терапевт", 1.0
 
     features_array = np.array(symptom_vector).reshape(1, -1)
