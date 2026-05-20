@@ -1,145 +1,134 @@
-import os
 import json
-import time
-import requests
+import random
+import os
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+random.seed(42)
 
+#28 симптомов 
 SYMPTOMS = [
-    "кашель",           # 1  вопрос id=1
-    "температура",      # 2  вопрос id=2
-    "головная боль",    # 3  вопрос id=3
-    "насморк",          # 4  вопрос id=4
-    "боль в горле",     # 5  вопрос id=5
-    "слабость",         # 6  вопрос id=6
-    "тошнота",          # 7  вопрос id=7
-    "боль в груди",     # 8  вопрос id=8
-    "сыпь на коже",     # 9  вопрос id=9
-    "повышенный сахар", # 10 вопрос id=10
-    "нарушение зрения", # 11 вопрос id=11
-    "боль в животе",    # 12 вопрос id=12
-    "боль в спине",     # 13 вопрос id=13
-    "одышка",           # 14 вопрос id=14
+    "кашель",                       
+    "температура",                  
+    "головная боль",                
+    "насморк",                      
+    "боль в горле",                 
+    "слабость",                     
+    "тошнота",                      
+    "боль в груди",                 
+    "сыпь на коже",                 
+    "повышенный сахар",             
+    "нарушение зрения",             
+    "боль в животе",                
+    "боль в спине",                 
+    "одышка",                       
+    "зуд кожи",                     
+    "акне",                         
+    "шелушение кожи",               
+    "боль в ухе",                   
+    "снижение слуха",               
+    "головокружение",               
+    "онемение конечностей",         
+    "изжога",                       
+    "учащённое сердцебиение",       
+    "отёки ног",                    
+    "жажда и частое мочеиспускание",
+    "двоение в глазах",             
+    "боль в суставах",              
+    "хрипы при дыхании",            
 ]
 
-SPECIALIZATIONS = [
-    "Терапевт",
-    "ЛОР",
-    "Невролог",
-    "Гастроэнтеролог",
-    "Кардиолог",
-    "Дерматолог",
-    "Эндокринолог",
-    "Офтальмолог",
-    "Ортопед",
-    "Пульмонолог",
-]
+SPECIALIZATION_PROFILES = {
+    "ЛОР": {
+        "core":     [3, 4, 17],        #насморк, боль в горле, боль в ухе
+        "likely":   [0, 1, 18, 19],    #кашель, температура, снижение слуха, головокружение
+        "possible": [5, 2],
+    },
+    "Пульмонолог": {
+        "core":     [0, 13, 27],       #кашель, одышка, хрипы
+        "likely":   [1, 5, 7],         #температура, слабость, боль в груди
+        "possible": [2, 6],
+    },
+    "Терапевт": {
+        "core":     [1, 5],            #температура, слабость
+        "likely":   [0, 2, 3],         #кашель, голова, насморк
+        "possible": [6, 4],
+    },
+    "Невролог": {
+        "core":     [2, 19, 20],       #головная боль, головокружение, онемение
+        "likely":   [5, 6],            #слабость, тошнота
+        "possible": [1, 12],
+    },
+    "Гастроэнтеролог": {
+        "core":     [6, 11, 21],       #тошнота, боль в животе, изжога
+        "likely":   [5, 1],            #слабость, температура
+        "possible": [2, 7],
+    },
+    "Кардиолог": {
+        "core":     [7, 22, 23],       #боль в груди, сердцебиение, отёки
+        "likely":   [13, 5],           #одышка, слабость
+        "possible": [6, 1],
+    },
+    "Дерматолог": {
+        "core":     [8, 14, 16],       #сыпь, зуд, шелушение
+        "likely":   [15, 1],           #акне, температура
+        "possible": [5, 6],
+    },
+    "Эндокринолог": {
+        "core":     [9, 24, 23],       #сахар, жажда/моч., отёки
+        "likely":   [5, 10],           #слабость, нарушение зрения
+        "possible": [2, 1],
+    },
+    "Офтальмолог": {
+        "core":     [10, 25],          #нарушение зрения, двоение
+        "likely":   [2, 6],            #головная боль, тошнота
+        "possible": [5, 19],
+    },
+    "Ортопед": {
+        "core":     [12, 26, 20],      #боль в спине, суставы, онемение
+        "likely":   [5, 2],            #слабость, головная боль
+        "possible": [13, 6],
+    },
+}
 
-SYMPTOM_LIST = ", ".join(f"{i+1}) {s}" for i, s in enumerate(SYMPTOMS))
-SPEC_LIST = ", ".join(SPECIALIZATIONS)
-
-PROMPT_TEMPLATE = """Ты медицинский эксперт. Сгенерируй {n} записей обучающих данных для классификатора симптомов.
-
-Симптомы (индексы 0-13 в порядке):
-{symptoms}
-
-Специализации: {specializations}
-
-Медицинские правила соответствия:
-- кашель + насморк + боль в горле → ЛОР
-- кашель + одышка → Пульмонолог
-- головная боль + слабость → Невролог
-- тошнота + боль в животе → Гастроэнтеролог
-- температура + слабость → Терапевт
-- боль в груди → Кардиолог
-- сыпь на коже → Дерматолог
-- повышенный сахар → Эндокринолог
-- нарушение зрения → Офтальмолог
-- боль в спине → Ортопед
-
-Верни ТОЛЬКО валидный JSON массив без пояснений, markdown и текста:
-[{{"symptoms": [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "specialization": "Невролог"}}]
-
-Вектор симптомов всегда содержит ровно 14 значений (0 или 1).
-Сгенерируй ровно {n} записей с разнообразными комбинациями для каждого специалиста."""
+RECORDS_PER_SPEC = 150
 
 
-def generate_batch(n: int) -> list:
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "messages": [
-            {"role": "user", "content": PROMPT_TEMPLATE.format(
-                n=n,
-                symptoms=SYMPTOM_LIST,
-                specializations=SPEC_LIST,
-            )}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 8192,
-    }
+def generate_record(spec):
+    profile = SPECIALIZATION_PROFILES[spec]
+    vector = [0] * len(SYMPTOMS)
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
+    for idx in profile["core"]:
+        vector[idx] = 1
 
-    response = requests.post(GROQ_URL, json=payload, headers=headers)
-    response.raise_for_status()
+    n_likely = random.randint(1, len(profile["likely"]))
+    for idx in random.sample(profile["likely"], n_likely):
+        vector[idx] = 1
 
-    text = response.json()["choices"][0]["message"]["content"].strip()
-    if "```" in text:
-        text = text.split("```")[1]
-        if text.startswith("json"):
-            text = text[4:]
-    text = text.strip()
+    for idx in profile["possible"]:
+        if random.random() < 0.35:
+            vector[idx] = 1
 
-    return json.loads(text)
+    return {"symptoms": vector, "specialization": spec}
 
 
 def main():
-    print("Генерация обучающих данных через Groq API (LLaMA 3.1)...")
+    print("Генерация обучающих данных локально...")
     all_data = []
+    for spec in SPECIALIZATION_PROFILES:
+        records = [generate_record(spec) for _ in range(RECORDS_PER_SPEC)]
+        all_data.extend(records)
+        avg = sum(sum(r["symptoms"]) for r in records) / len(records)
+        print(f"  {spec:<20} {len(records)} записей, среднее симптомов: {avg:.1f}")
 
-    for i in range(5):
-        print(f"Батч {i+1}/5 — генерируем 50 записей...")
-        try:
-            batch = generate_batch(50)
-            valid = [
-                item for item in batch
-                if isinstance(item.get("symptoms"), list)
-                and len(item["symptoms"]) == len(SYMPTOMS)
-                and item.get("specialization") in SPECIALIZATIONS
-            ]
-            all_data.extend(valid)
-            print(f"  Получено валидных: {len(valid)} из {len(batch)}")
-        except Exception as e:
-            print(f"  Ошибка: {e}")
-        time.sleep(3)
-
-    print(f"\nВсего сгенерировано: {len(all_data)} записей")
+    random.shuffle(all_data)
+    print(f"\nИтого: {len(all_data)} записей, симптомов в векторе: {len(SYMPTOMS)}")
 
     os.makedirs("models_store", exist_ok=True)
-    existing = []
-    if os.path.exists("models_store/training_data.json"):
-        with open("models_store/training_data.json", encoding="utf-8") as f:
-            try:
-                existing = json.load(f)
-                existing = [
-                    item for item in existing
-                    if isinstance(item.get("symptoms"), list)
-                    and len(item["symptoms"]) == len(SYMPTOMS)
-                ]
-            except Exception:
-                existing = []
-
-    all_data = existing + all_data
-
-    with open("models_store/training_data.json", "w", encoding="utf-8") as f:
+    out_path = "models_store/training_data.json"
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(all_data, f, ensure_ascii=False, indent=2)
 
-    print(f"Итого в файле: {len(all_data)} записей")
-    print("Данные сохранены в models_store/training_data.json")
+    print(f"Сохранено в {out_path}")
+    print("Теперь запусти: python3 train_model.py")
 
 
 if __name__ == "__main__":

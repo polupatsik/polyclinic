@@ -4,24 +4,46 @@ import numpy as np
 
 _model_data = None
 
-SYMPTOM_TREE = {
-    "температура":      {True: "кашель",          False: "головная боль"},
-    "кашель":           {True: "насморк",          False: "одышка"},
-    "насморк":          {True: "боль в горле",     False: "слабость"},
-    "боль в горле":     {True: "слабость",         False: "тошнота"},
-    "одышка":           {True: "слабость",         False: "боль в груди"},
-    "головная боль":    {True: "слабость",         False: "боль в груди"},
-    "слабость":         {True: "тошнота",          False: "боль в животе"},
-    "тошнота":          {True: "боль в животе",    False: "боль в груди"},
-    "боль в животе":    {True: "боль в груди",     False: "боль в спине"},
-    "боль в груди":     {True: "одышка",           False: "сыпь на коже"},
-    "сыпь на коже":     {True: "повышенный сахар", False: "повышенный сахар"},
-    "повышенный сахар": {True: "нарушение зрения", False: "нарушение зрения"},
-    "нарушение зрения": {True: "боль в спине",     False: "боль в спине"},
-    "боль в спине":     {True: None,               False: None},
-}
-
-INITIAL_SYMPTOM = "температура"
+#Все 28 симптомов задаются последовательно.
+#классификатор получает полный вектор и выдаёт честную вероятность.
+QUESTION_ORDER = [
+    #общие/инфекционные
+    "температура",
+    "кашель",
+    "насморк",
+    "боль в горле",
+    "одышка",
+    "хрипы при дыхании",
+    #неврологические/ЛОР
+    "головная боль",
+    "головокружение",
+    "онемение конечностей",
+    "боль в ухе",
+    "снижение слуха",
+    #общие
+    "слабость",
+    #кардио
+    "боль в груди",
+    "учащённое сердцебиение",
+    "отёки ног",
+    #опорно-двигательные
+    "боль в спине",
+    "боль в суставах",
+    #ЖКТ
+    "тошнота",
+    "боль в животе",
+    "изжога",
+    #кожные
+    "сыпь на коже",
+    "зуд кожи",
+    "акне",
+    "шелушение кожи",
+    #эндокринные/офтальмо
+    "повышенный сахар",
+    "жажда и частое мочеиспускание",
+    "нарушение зрения",
+    "двоение в глазах",
+]
 
 
 def load_model():
@@ -43,17 +65,28 @@ def get_model():
 
 
 def get_initial_symptom() -> str:
-    return INITIAL_SYMPTOM
+    return QUESTION_ORDER[0]
 
 
 def get_next_symptom(current_symptom: str, answer: bool, answered: set) -> str | None:
-    next_sym = SYMPTOM_TREE.get(current_symptom, {}).get(answer)
-    if next_sym and next_sym in answered:
+    """
+    Возвращает следующий симптом из фиксированной очереди.
+    answer и answered игнорируются — вопросы идут строго по порядку.
+    """
+    if current_symptom not in QUESTION_ORDER:
         return None
-    return next_sym
+    current_index = QUESTION_ORDER.index(current_symptom)
+    next_index = current_index + 1
+    if next_index >= len(QUESTION_ORDER):
+        return None
+    return QUESTION_ORDER[next_index]
 
 
 def predict_specialization(symptom_answers: dict) -> tuple[str, float]:
+    """
+    Принимает словарь {symptom_name: bool} и возвращает
+    (специализация, уверенность от 0.0 до 1.0).
+    """
     model_data = get_model()
     clf = model_data["classifier"]
     symptoms = model_data["symptoms"]
