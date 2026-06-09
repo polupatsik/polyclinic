@@ -21,7 +21,8 @@ services:
       retries: 5
 
   backend:
-    build: .
+    build:
+      context: .
     container_name: polyclinic_backend
     env_file:
       - .env
@@ -36,6 +37,18 @@ services:
     networks:
       - polyclinic_net
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ../polyclinic2
+      dockerfile: Dockerfile
+    container_name: polyclinic_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - polyclinic_net
 
 volumes:
   postgres_data:
